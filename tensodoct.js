@@ -1230,6 +1230,8 @@ function extract_words() {
         extracted_input_words[0] = ``;
     }
 
+    resolve_go_shortcut();
+
     // Set noun to blank, if not defined
     if (extracted_input_words.length < 2) {
         extracted_input_words[1] = ``;
@@ -1646,4 +1648,51 @@ function get_condition_parameter(action_id, condition) {
     var condition_raw = action_data[action_id][condition];
     var condition_parameter = Math.floor(condition_raw / CONDITION_DIVISOR);
     return condition_parameter;
+}
+
+function resolve_go_shortcut() {
+    var entered_input_verb = extracted_input_words[0].toLowerCase();
+    // Don't make shortcut if input verb matches legitimate word action
+    var viable_phrases = get_viable_word_actions();
+
+    for (viable_verb in viable_phrases) {
+        var possible_verb_text = list_of_verbs_and_nouns[viable_verb][0].toLowerCase();
+        var shortened_verb = entered_input_verb.substr(0, possible_verb_text.length);
+        if (shortened_verb === possible_verb_text) {
+            return 1;
+        }
+    }
+
+    var direction;
+    for (direction = 0; direction <= DIRECTION_NOUNS; direction++) {
+        var direction_noun_text = list_of_verbs_and_nouns[direction][1].toLowerCase();
+        var shortened_direction = direction_noun_text.substr(0, entered_input_verb.length);
+        if (entered_input_verb === shortened_direction) {
+            extracted_input_words[0] = list_of_verbs_and_nouns[VERB_GO][0].toLowerCase();
+            extracted_input_words[1] = direction_noun_text;
+            return 1;
+        }
+    }
+    return 1;
+}
+
+// Evaluate all conditions in all actions, and save verbs and nouns for the
+// actions with conditions that would succeed
+function get_viable_word_actions() {
+    var viable_phrases = {};
+    var current_action = 0;
+    for (current_action in action_data) {
+        var action_verb = get_action_verb(current_action);
+        var action_noun = get_action_noun(current_action);
+        if (action_verb > 0) {
+            if (evaluate_conditions(current_action)) {
+                if (viable_phrases[action_verb] === undefined) {
+                    viable_phrases[action_verb] = {};
+                }
+                viable_phrases[action_verb][action_noun] = ``;
+            }
+        }
+
+    }
+    return viable_phrases;
 }
