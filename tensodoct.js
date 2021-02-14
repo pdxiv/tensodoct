@@ -728,9 +728,11 @@ function process_input() {
         }
         else {
             run_actions(found_word[0], found_word[1]);
-            check_and_change_light_source_status();
-            found_word[0] = 0;
-            run_actions(found_word[0], found_word[1]);
+            if (input_state !== INPUT_STATE_SAVE) {
+                check_and_change_light_source_status();
+                found_word[0] = 0;
+                run_actions(found_word[0], found_word[1]);
+            }
         }
     }
 }
